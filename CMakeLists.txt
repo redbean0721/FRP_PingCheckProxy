@@ -27,6 +27,8 @@ FetchContent_Declare(
         GIT_TAG        master
 )
 set(CPR_CURL_USE_LIBPSL OFF CACHE INTERNAL "")
+set(BUILD_SHARED_LIBS OFF CACHE INTERNAL "")
+set(OPENSSL_USE_STATIC_LIBS ON CACHE INTERNAL "")
 FetchContent_MakeAvailable(cpr)
 
 add_executable(FRP_PingCheckProxy main.cpp)
@@ -34,5 +36,12 @@ add_executable(FRP_PingCheckProxy main.cpp)
 target_compile_definitions(FRP_PingCheckProxy PUBLIC ASIO_STANDALONE)
 
 target_include_directories(FRP_PingCheckProxy PRIVATE ${ASIO_INCLUDE_DIR})
+
+# Platform-specific static linking
+if(LINUX)
+    set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static")
+elseif(WIN32)
+    set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
+endif()
 
 target_link_libraries(FRP_PingCheckProxy PUBLIC Crow::Crow cpr::cpr)
