@@ -1,0 +1,73 @@
+{
+    "_comment": "Generic C++ Egg for CMake projects",
+    "meta": {
+        "version": "PTDL_v2",
+        "update_url": null
+    },
+    "exported_at": "2026-01-13T03:21:00+00:00",
+    "name": "Generic C++ (CMake)",
+    "author": "redbean0721@redbean0721.com",
+    "description": "C++ Egg for projects using CMake and FetchContent dependencies",
+    "features": null,
+    "docker_images": {
+        "Debian (glibc)": "ghcr.io/pterodactyl/yolks:debian"
+    },
+    "file_denylist": [],
+    "startup": "apt-get update -qq && apt-get install -qq -y libssl3 > /dev/null 2>&1 && ./build/FRP_PingCheckProxy",
+    "config": {
+        "files": "{}",
+        "startup": "{ \"done\": \"ready\" }",
+        "logs": "{}",
+        "stop": "^C"
+    },
+    "scripts": {
+        "installation": {
+            "script": "#!/bin/bash\napt update && apt install -y build-essential cmake git wget curl libssl-dev\nmkdir -p /mnt/server\ncd /mnt/server\n\nif [ \"${USER_UPLOAD}\" == \"1\" ]; then\n  echo \"User upload enabled, skipping git clone\"\n  exit 0\nfi\n\nif [ -z \"${GIT_ADDRESS}\" ]; then\n  echo \"No git repo specified\"\n  exit 0\nfi\n\nif [[ ${GIT_ADDRESS} != *.git ]]; then\n  GIT_ADDRESS=${GIT_ADDRESS}.git\nfi\n\nif [ -z \"${BRANCH}\" ]; then\n  git clone ${GIT_ADDRESS} .\nelse\n  git clone --single-branch --branch ${BRANCH} ${GIT_ADDRESS} .\nfi\n\necho \"Building project...\"\nmkdir -p build\ncd build\ncmake .. -DCMAKE_BUILD_TYPE=Release\ncmake --build . --config Release\necho \"Build completed successfully\"\n",            
+            "container": "ghcr.io/pterodactyl/yolks:debian",
+            "entrypoint": "bash",
+            "executable": true
+        }
+    },
+    "variables": [
+        {
+            "name": "Git Repository Address",
+            "description": "Git repository to Clone",
+            "env_variable": "GIT_ADDRESS",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "Git Branch",
+            "description": "Branch to Clone",
+            "env_variable": "BRANCH",
+            "default_value": "",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "nullable|string",
+            "field_type": "text"
+        },
+        {
+            "name": "User Upload",
+            "description": "1 = user uploads files manually",
+            "env_variable": "USER_UPLOAD",
+            "default_value": "0",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|boolean",
+            "field_type": "text"
+        },
+        {
+            "name": "Executable Name",
+            "description": "Binary file name output by CMake",
+            "env_variable": "EXECUTABLE",
+            "default_value": "app",
+            "user_viewable": true,
+            "user_editable": true,
+            "rules": "required|string",
+            "field_type": "text"
+        }
+    ]
+}

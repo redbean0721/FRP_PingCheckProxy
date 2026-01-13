@@ -3,6 +3,8 @@ project(FRP_PingCheckProxy)
 
 set(CMAKE_CXX_STANDARD 17)
 
+option(STATIC_BUILD "Build with static linking" OFF)
+
 include(FetchContent)
 
 FetchContent_Declare(
@@ -37,11 +39,16 @@ target_compile_definitions(FRP_PingCheckProxy PUBLIC ASIO_STANDALONE)
 
 target_include_directories(FRP_PingCheckProxy PRIVATE ${ASIO_INCLUDE_DIR})
 
-# Platform-specific static linking
-if(LINUX)
-    set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static")
-elseif(WIN32)
-    set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
+if(STATIC_BUILD)
+    if(LINUX)
+        set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static")
+    elseif(WIN32)
+        set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
+    endif()
+else()
+    if(LINUX OR WIN32)
+        set_target_properties(FRP_PingCheckProxy PROPERTIES LINK_FLAGS "-static-libgcc -static-libstdc++")
+    endif()
 endif()
 
 target_link_libraries(FRP_PingCheckProxy PUBLIC Crow::Crow cpr::cpr)
