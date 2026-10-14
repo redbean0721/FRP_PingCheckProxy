@@ -104,7 +104,25 @@ int main(int argc, char* argv[]) {
             cpr::Url { "https://taiwanfrp.ddns.net/ping_check" },
             cpr::Body { req.body },
             cpr::Header { { "Content-Type", "application/json" } },
-            cpr::Timeout { 500 }   // 500 milliseconds timeout
+            cpr::Timeout { 200 }   // 500 milliseconds timeout
+        );
+
+        if (resp.status_code == 200) {
+            crow::response res(resp.text);
+            res.set_header("Content-Type", "application/json");
+            return res;
+        } else {
+            CROW_LOG_WARNING << "Upstream failed with status code: " << resp.status_code << " " << resp.error.message;
+            return crow::response(PingCheckResponse().to_json());
+        }
+    });
+
+    CROW_ROUTE(app, "/frpsauthapi/login").methods("POST"_method)([](const crow::request& req) {
+        auto resp = cpr::Post(
+            cpr::Url { "https://taiwanfrp.ddns.net/frpsauthapi/login" },
+            cpr::Body { req.body },
+            cpr::Header { { "Content-Type", "application/json" } },
+            cpr::Timeout { 200 }   // 500 milliseconds timeout
         );
 
         if (resp.status_code == 200) {
